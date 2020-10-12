@@ -15,7 +15,7 @@ io.on('connection', (client) => {
             });
         }
 
-        //Uniendome a una sala 
+        //Uniendo el cliente a la sala 
         client.join(data.sala);
 
         //Si existe la propiedad nombre en el usuario
@@ -29,14 +29,14 @@ io.on('connection', (client) => {
         client.broadcast.to(data.sala).emit('listaPersona', usuarios.getPersonasPorSala(data.sala));
 
         //Emitir evento que notifique que un usuario espeficico se conecto
-        client.broadcast.to(data.sala).emit('usuarioConectado', { usuario: 'Administrador', mensaje: `${data.nombre} se acaba de conectar` });
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Administrador', `${ data.nombre } se unió`));
 
         //Retornar las personas que estan conectadas a una sala especifica
         callback(usuarios.getPersonasPorSala(data.sala));
     });
 
     //Escuchando evento "crearMensaje proveniente del cliente"
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
         //Obteniendo la info del usuario que emitio este evento
         let persona = usuarios.getPersona(client.id);
 
@@ -44,6 +44,9 @@ io.on('connection', (client) => {
 
         //Emitiendo "mensaje" a todos los usuarios de una sala especifica
         client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
+
+        //Ejecutando el callback
+        callback(mensaje);
     });
 
     client.on('disconnect', () => {
